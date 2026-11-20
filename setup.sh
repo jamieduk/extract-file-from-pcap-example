@@ -54,4 +54,40 @@ echo
 echo "[IMPORTANT] Log out and back in for group changes to take effect."
 echo
 
+# Set Perms for tshark
 
+PROFILE="/etc/apparmor.d/tshark"
+LOCAL_RULE="/etc/apparmor.d/local/tshark"
+
+# Check the TShark AppArmor profile exists.
+if [[ ! -f "$PROFILE" ]]; then
+    echo "[ERROR] TShark AppArmor profile not found: $PROFILE"
+    exit 1
+fi
+
+# Create the local override directory and file.
+sudo mkdir -p /etc/apparmor.d/local
+sudo touch "$LOCAL_RULE"
+
+# Add the rule only if it is not already present.
+if ! grep -Fq 'owner @{HOME}/** r,' "$LOCAL_RULE"; then
+    echo 'owner @{HOME}/** r,' | sudo tee -a "$LOCAL_RULE" >/dev/null
+fi
+
+# Reload the TShark AppArmor profile.
+if sudo apparmor_parser -r "$PROFILE"; then
+    echo "[OK] TShark AppArmor profile reloaded."
+else
+    echo "[ERROR] Failed to reload AppArmor profile."
+    exit 1
+fi
+
+# Test reading the capture.
+cd "$HOME/Documents/Scripts/BASH/extract-file-from-pcap" || exit 1
+
+if tshark -r evidence.pcapng -q; then
+    echo "[OK] TShark can now read evidence.pcapng."
+else
+    echo "[ERROR] TShark still cannot read the capture."
+    exit 1
+fi
