@@ -7,7 +7,7 @@
 #
 sudo chmod +x *.sh
 
-sudo apt install -y tshark 
+sudo apt install -y tshark python3 curl
 
 
 
