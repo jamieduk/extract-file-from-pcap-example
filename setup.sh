@@ -14,7 +14,7 @@ project_dir="$HOME/Documents/Scripts/BASH/extract-file-from-pcap"
 sudo chmod +x "$project_dir"/*.sh
 
 # Install dependencies.
-sudo apt install -y tshark python3 curl
+sudo apt install -y tshark python3 curl login
 
 # Configure for packet capture.
 sudo dpkg-reconfigure wireshark-common
@@ -53,4 +53,5 @@ getcap "$dumpcap_path"
 echo
 echo "[IMPORTANT] Log out and back in for group changes to take effect."
 echo
+
 
