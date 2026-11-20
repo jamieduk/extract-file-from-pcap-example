@@ -1,0 +1,61 @@
+Example to Extract a file from pcap file (captured)
+
+https://github.com/jamieduk/extract-file-from-pcap-example
+
+
+Start the HTTP server
+
+./start-server.sh
+
+# Creates test file and starts server
+
+
+
+Capture HTTP traffic
+
+./capture.sh
+
+# Creates evidence.pcapng
+
+
+
+Read and extract captured traffic
+
+./read.sh
+
+# Displays requests and extracts files
+
+
+
+Stop the server
+
+./stop-server.sh
+
+# Cleans up running server
+
+
+
+# Fille structure
+
+PCAP-HTTP-Extraction/
+├── start-server.sh
+├── capture.sh
+├── read.sh
+├── stop-server.sh
+├── server.log              (generated)
+├── server.pid              (generated)
+├── evidence.pcapng         (generated)
+├── www/
+│   └── case20.txt          (generated)
+└── export/
+    └── case20.txt          (extracted)
+    
+
+
+
+
+
+
+
+
+
