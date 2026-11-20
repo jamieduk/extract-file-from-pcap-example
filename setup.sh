@@ -56,38 +56,39 @@ echo
 
 # Set Perms for tshark
 
+PROJECT="/home/jay/Documents/Scripts/BASH/extract-file-from-pcap"
+EXPORT="$PROJECT/export"
 PROFILE="/etc/apparmor.d/tshark"
-LOCAL_RULE="/etc/apparmor.d/local/tshark"
+LOCAL="/etc/apparmor.d/local/tshark"
 
-# Check the TShark AppArmor profile exists.
-if [[ ! -f "$PROFILE" ]]; then
-    echo "[ERROR] TShark AppArmor profile not found: $PROFILE"
-    exit 1
-fi
+echo "========== FIXING EXPORT PERMISSIONS =========="
 
-# Create the local override directory and file.
-sudo mkdir -p /etc/apparmor.d/local
-sudo touch "$LOCAL_RULE"
+sudo mkdir -p "$EXPORT"
+sudo chown -R jay:jay "$EXPORT"
+chmod 755 "$EXPORT"
 
-# Add the rule only if it is not already present.
-if ! grep -Fq 'owner @{HOME}/** r,' "$LOCAL_RULE"; then
-    echo 'owner @{HOME}/** r,' | sudo tee -a "$LOCAL_RULE" >/dev/null
-fi
+echo
+echo "========== APPARMOR CONFIGURATION =========="
 
-# Reload the TShark AppArmor profile.
-if sudo apparmor_parser -r "$PROFILE"; then
-    echo "[OK] TShark AppArmor profile reloaded."
+if [ -f "$PROFILE" ]; then
+    sudo mkdir -p /etc/apparmor.d/local
+    sudo touch "$LOCAL"
+
+    RULE1="owner $EXPORT/ rw,"
+    RULE2="owner $EXPORT/** rw,"
+
+    grep -Fqx "$RULE1" "$LOCAL" || echo "$RULE1" | sudo tee -a "$LOCAL" >/dev/null
+    grep -Fqx "$RULE2" "$LOCAL" || echo "$RULE2" | sudo tee -a "$LOCAL" >/dev/null
+
+    sudo apparmor_parser -r "$PROFILE" || exit 1
+
+    echo "[OK] AppArmor profile updated."
 else
-    echo "[ERROR] Failed to reload AppArmor profile."
-    exit 1
+    echo "[WARNING] TShark AppArmor profile not found."
 fi
 
-# Test reading the capture.
-cd "$HOME/Documents/Scripts/BASH/extract-file-from-pcap" || exit 1
-
-if tshark -r evidence.pcapng -q; then
-    echo "[OK] TShark can now read evidence.pcapng."
-else
-    echo "[ERROR] TShark still cannot read the capture."
-    exit 1
-fi
+echo
+echo "========== PERMISSIONS =========="
+ls -ld "$EXPORT"
+echo
+echo "========== COMPLETE =========="
