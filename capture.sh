@@ -1,7 +1,9 @@
+
 #!/bin/bash
 # (c) J~Net 2026
 #
 # ./capture.sh
+# Press S to stop capture or CTRL+C.
 #
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -24,9 +26,27 @@ if ! curl -fsS "http://127.0.0.1:$PORT/case20.txt" -o /dev/null; then
     exit 1
 fi
 
-# Capture loopback HTTP traffic.
+# Stop capture cleanly.
+stop_capture() {
+    if [[ -n "$capture_pid" ]] && kill -0 "$capture_pid" 2>/dev/null; then
+        echo
+        echo "[INFO] Stopping packet capture..."
+        kill -INT "$capture_pid" 2>/dev/null
+        wait "$capture_pid" 2>/dev/null
+    fi
+
+    capture_pid=""
+    echo "[OK] Packet capture saved: $OUTPUT"
+    exit 0
+}
+
+# Handle CTRL+C.
+trap stop_capture INT TERM
+
+# Start continuous capture.
 rm -f "$OUTPUT"
 
+echo "[INFO] Starting continuous packet capture..."
 tshark -i lo -f "tcp port $PORT" -w "$OUTPUT" >/dev/null 2>&1 &
 capture_pid=$!
 
@@ -34,26 +54,38 @@ sleep 1
 
 if ! kill -0 "$capture_pid" 2>/dev/null; then
     echo "[ERROR] Unable to start packet capture."
+    wait "$capture_pid"
     exit 1
 fi
 
-# Generate HTTP traffic.
-echo "[INFO] Requesting test file..."
+echo
+echo "======================================"
+echo " HTTP PACKET CAPTURE RUNNING"
+echo "======================================"
+echo
+echo "[INFO] Interface: lo"
+echo "[INFO] Port: $PORT"
+echo "[INFO] Output: evidence.pcapng"
+echo
+echo "Access the test server or generate HTTP traffic."
+echo
+echo "Press S to stop capture."
+echo "Press CTRL+C to stop capture."
+echo
 
-if ! curl -fsS "http://127.0.0.1:$PORT/case20.txt" -o /dev/null; then
-    echo "[ERROR] HTTP request failed."
-    kill -INT "$capture_pid" 2>/dev/null
-    wait "$capture_pid" 2>/dev/null
-    exit 1
-fi
+# Monitor keyboard input.
+while true; do
+    read -rsn1 -t 0.5 key
 
-sleep 1
+    if [[ "$key" == "s" || "$key" == "S" ]]; then
+        stop_capture
+    fi
 
-# Stop capture cleanly.
-kill -INT "$capture_pid" 2>/dev/null
-wait "$capture_pid" 2>/dev/null
-capture_pid=""
-
-echo "[OK] Packet capture saved: $OUTPUT"
-
+    if ! kill -0 "$capture_pid" 2>/dev/null; then
+        wait "$capture_pid"
+        capture_pid=""
+        echo "[ERROR] TShark stopped unexpectedly."
+        exit 1
+    fi
+done
 
