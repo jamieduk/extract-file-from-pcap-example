@@ -25,6 +25,9 @@ Read and extract captured traffic
 
 # Displays requests and extracts files
 
+./check.sh
+
+# Double checks the hash after you do a ./read.sh
 
 
 Stop the server
@@ -50,7 +53,6 @@ PCAP-HTTP-Extraction/
 └── export/
     └── case20.txt          (extracted)
     
-
 
 
 
