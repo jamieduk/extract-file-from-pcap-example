@@ -6,6 +6,9 @@ https://github.com/jamieduk/extract-file-from-pcap-example
 
 This project demonstrates how to capture HTTP traffic, inspect a PCAP file, extract transferred files and verify that the recovered files match the originals.
 
+<img width="975" height="506" alt="Screenshot From 2026-11-20 21-35-32" src="https://github.com/user-attachments/assets/206cd756-38db-4300-8d96-85d3e73efbaa" />
+
+
 The example uses a local Python HTTP server and a fictional test file (`case20.txt`) to demonstrate the process.
 
 ## Requirements
